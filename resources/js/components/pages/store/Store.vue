@@ -4,7 +4,11 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    export default Vue.extend({
-        
-    });
+    import Component from 'vue-class-component';
+
+    @Component({
+      
+    })
+    export default class extends Vue {
+    };
 </script>

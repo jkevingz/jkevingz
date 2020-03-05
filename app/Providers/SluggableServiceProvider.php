@@ -36,7 +36,7 @@ class SluggableServiceProvider extends ServiceProvider
 
                 $value = $original = Str::slug($model->{$after}, '-');
                 $count = 0;
-                while($model->all()->where($slug, $value)->isNotEmpty()) {
+                while ($model->all()->where($slug, $value)->where($model->getKeyName(), '<>', $model->getKey())->isNotEmpty()) {
                     $value = $original . '-' . ++$count;
                 }
 

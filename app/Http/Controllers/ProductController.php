@@ -42,13 +42,15 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\StoreProduct  $request
+     * @param  \App\Http\Requests\UpdateProduct  $request
      * @param  \App\Product  $product
      * @return \Illuminate\Http\Response
      */
     public function update(StoreProduct $request, Product $product)
     {
-        return $product->update($request->validated());
+        $product->update($request->validated());
+
+        return $product;
     }
 
     /**
@@ -57,8 +59,10 @@ class ProductController extends Controller
      * @param  \App\Product  $product
      * @return \Illuminate\Http\Response
      */
-    public function destroy($product)
+    public function destroy(Product $product)
     {
-        return $product->delete();
+        $product->delete();
+
+        return $product;
     }
 }
