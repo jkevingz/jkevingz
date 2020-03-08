@@ -1,5 +1,6 @@
 import { Product } from '../../data/Product';
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
+import { handleError } from '../utils/requestHelpers';
 
 const baseUrl = '/api/product';
 
@@ -16,42 +17,54 @@ const getters = {
 
 const actions = {
     fetchProducts: async ({commit}: any): Promise<void> => {
-        const response = await axios.get(baseUrl);
-
-        if (response.status === 200) {
-            commit('setProducts', Product.createMultipleFromResponse(response.data));
+        try {
+            const response = await axios.get(baseUrl);
+            return commit ('SET_PRODUCTS', Product.createMultipleFromResponse(response.data));
+        }
+        catch (error) {
+            return handleError(error);
         }
     },
     addProduct: async ({commit}: any, product: Product): Promise<void> => {
-        const response = await axios.post(baseUrl, product);
-
-        if (response.status === 201) {
-            commit('newProduct', Product.createSingleFromResponse(response.data));
+        try {
+            const response = await axios.post(baseUrl, product);
+            return commit('ADD_PRODUCT', Product.createSingleFromResponse(response.data));
+        }
+        catch (error) {
+            handleError(error);
         }
     },
     editProduct: async ({commit}: any, product: Product): Promise<void> => {
-        const response = await axios.put(baseUrl + '/' + product.id, product);
-
-        commit('updateProduct', Product.createSingleFromResponse(response.data));
+        try {
+            const response = await axios.put(baseUrl + '/' + product.id, product);
+            return commit('UPDATE_PRODUCT', Product.createSingleFromResponse(response.data));
+        }
+        catch (error) {
+            handleError(error);
+        }
     },
     deleteProduct: async ({commit}: any, product: Product): Promise<void> => {
-        const response = await axios.delete(baseUrl + '/' + product.id);
-
-        commit('removeProduct', Product.createSingleFromResponse(response.data));
+        try {
+            const response = await axios.delete(baseUrl + '/' + product.id);
+            return commit('REMOVE_PRODUCT', Product.createSingleFromResponse(response.data));
+        }
+        catch (error) {
+            handleError(error);
+        }
     },
 };
 
 const mutations = {
-    setProducts: (state: ProductState, products: Product[]): void => {
+    SET_PRODUCTS: (state: ProductState, products: Product[]): void => {
         state.products = products;
     },
-    newProduct: (state: ProductState, product: Product): void => {
+    ADD_PRODUCT: (state: ProductState, product: Product): void => {
         state.products.unshift(product);
     },
-    updateProduct: (state: ProductState, product: Product): void  => {
+    UPDATE_PRODUCT: (state: ProductState, product: Product): void  => {
         state.products = state.products.map(value => product.isEqualToProduct(value) ? product : value);
     },
-    removeProduct: (state: ProductState, product: Product): void => {
+    REMOVE_PRODUCT: (state: ProductState, product: Product): void => {
         state.products = state.products.filter(value => product.isNotEqualToProduct(value));
     },
 };

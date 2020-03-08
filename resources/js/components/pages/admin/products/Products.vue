@@ -76,231 +76,231 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from 'vue-class-component';
-    import { mapGetters, mapActions } from 'vuex';
-    import { Product } from '../../../../data/Product';
+  import Vue from 'vue';
+  import Component from 'vue-class-component';
+  import { mapGetters, mapActions } from 'vuex';
+  import { Product } from '../../../../data/Product';
 
-    @Component({
-      computed: mapGetters('product', ['products']),
-      methods: mapActions('product', ['fetchProducts', 'addProduct', 'editProduct', 'deleteProduct']),
-    })
-    export default class extends Vue {
+  @Component({
+    computed: mapGetters('product', ['products']),
+    methods: mapActions('product', ['fetchProducts', 'addProduct', 'editProduct', 'deleteProduct']),
+  })
+  export default class extends Vue {
 
-      /**
-       * A list of products to display on the data table. 
-       */
-      products!: Product[];
+    /**
+     * A list of products to display on the data table. 
+     */
+    products!: Product[];
 
-      /**
-       * Fetch the products from the api.
-       */
-      fetchProducts!: () => Promise<void>;
+    /**
+     * Fetch the products from the api.
+     */
+    fetchProducts!: () => Promise<void>;
 
-      /**
-       * Add a new product to the database.
-       */
-      addProduct!: (product: Product) => Promise<void>;
+    /**
+     * Add a new product to the database.
+     */
+    addProduct!: (product: Product) => Promise<void>;
 
-      /**
-       * Edit a product in the databse.
-       */
-      editProduct!: (product: Product) => Promise<void>;
+    /**
+     * Edit a product in the databse.
+     */
+    editProduct!: (product: Product) => Promise<void>;
 
-      /**
-       * Delete a product from the database.
-       */
-      deleteProduct!: (product: Product) => Promise<void>;
+    /**
+     * Delete a product from the database.
+     */
+    deleteProduct!: (product: Product) => Promise<void>;
 
-      /**
-       * Toggle boolean for form dialog.
-       */
-      dialog: boolean = false;
+    /**
+     * Toggle boolean for form dialog.
+     */
+    dialog: boolean = false;
 
-      /**
-       * Toggle boolean for confirmation dialog.
-       */
-      confirmationDialog: boolean = false;
+    /**
+     * Toggle boolean for confirmation dialog.
+     */
+    confirmationDialog: boolean = false;
 
-      /**
-       * The product that the dialog form will work with.
-       */
-      formProduct: Product = new Product();
+    /**
+     * The product that the dialog form will work with.
+     */
+    formProduct: Product = new Product();
 
-      /**
-       * The product to be deleted. This needs to be in the global scope as
-       * the dialog confirmation for will not know about the product otherwise.
-       */
-      deletedProduct: Product = new Product();
+    /**
+     * The product to be deleted. This needs to be in the global scope as
+     * the dialog confirmation for will not know about the product otherwise.
+     */
+    deletedProduct: Product = new Product();
 
-      /**
-       * The table headers.
-       * - ID: The unique identifier of the product.
-       * - Name: The name of the product.
-       * - Price: The price of the product.
-       * - Slug: The slug based on the product name.
-       * - Description: The product's description.
-       * - Actions: The actions to perform on the product (edit and delete).
-       */
-      headers = [
-        { text: 'ID', value: 'id'},
-        { text: 'Name', value: 'name'},
-        { text: 'Price', value: 'price'},
-        { text: 'Slug', value: 'slug', sortable: false},
-        { text: 'Description', value: 'description', sortable: false },
-        { text: 'Actions', value: 'action', sortable: false },
-      ];
+    /**
+     * The table headers.
+     * - ID: The unique identifier of the product.
+     * - Name: The name of the product.
+     * - Price: The price of the product.
+     * - Slug: The slug based on the product name.
+     * - Description: The product's description.
+     * - Actions: The actions to perform on the product (edit and delete).
+     */
+    headers = [
+      { text: 'ID', value: 'id'},
+      { text: 'Name', value: 'name'},
+      { text: 'Price', value: 'price'},
+      { text: 'Slug', value: 'slug', sortable: false},
+      { text: 'Description', value: 'description', sortable: false },
+      { text: 'Actions', value: 'action', sortable: false },
+    ];
 
-      /**
-       * The errors when calling the api.
-       */
-      errors: string[] = [];
+    /**
+     * The errors when calling the api.
+     */
+    errors: string[] = [];
 
-      /**
-       * The boolean to display the snackbar.
-       */
-      snackbar: boolean = false;
+    /**
+     * The boolean to display the snackbar.
+     */
+    snackbar: boolean = false;
 
-      /**
-       * The text to display on the snackbar.
-       */
-      snackbarText: string = '';
+    /**
+     * The text to display on the snackbar.
+     */
+    snackbarText: string = '';
 
-      /**
-       * The form dialog title. This will depend on the isNew value returned by
-       * the form product.
-       */
-      get formTitle(): string {
-        return this.formProduct.isNew() ? 'Add a new product' : 'Edit your product';
-      };
-      
-            /**
-       * Returns the form element.
-       */
-      form(): any {
-        return this.$refs.form;
-      }
-      
-      /**
-       * Reset the form if set.
-       */
-      resetForm(): void {
-        this.errors = [];
-        if (this.form()) {
-          this.form().resetValidation();
-        }
-      }
-
-      /**
-       * Validate the form if set.
-       */
-      validateForm(): boolean {
-        this.errors = [];
-        if (this.form()) {
-          return this.form().validate();
-        }
-
-        return false;
-      }
-
-      /**
-       * Fetch all products when this component is created.
-       */
-      created(): void {
-        this.fetchProducts();
-      }
-
-      /**
-       * Open up the modal to edit a product, and set the form item to have the
-       * properties the new item has.
-       */
-      onEdit(product: Product): void {
-        this.formProduct = Product.createSingleFromResponse(product);
-        this.dialog = true;
-      }
-
-      /**
-       * Callback for confirmation form. This will call the store to delete the
-       * given item.
-       */
-      onDelete(product: Product): void {
-        // No feedback expected from the api. If there are errors, they'll be
-        // handled in the store.
-        this.deleteProduct(product);
-        
-        this.confirmationDialog = false;
-        this.showSnackbar('User was deleted successfully.');
-      }
-
-      /**
-       * Open up the modal to create a new product, and set the form product as
-       * a new one.
-       */
-      onCreate() {
-        this.formProduct = new Product();
-        this.dialog = true; 
-      }
-
-      
-      /**
-       * Callback for dialog form. This will either update the product or create
-       * a new one depending on the current action.
-       */
-      onSave(): void {
-        if (!this.validateForm()) {
-          return;
-        }
-
-        this.formProduct.isNew() ? this.callSave() : this.callUpdate();
-      }
-
-      /**
-       * Call the store the add a new user.
-       */
-      async callSave(): Promise<void>{
-        try {
-          await this.addProduct(this.formProduct);
-          this.dialog = false;
-          this.showSnackbar('Product was successfully created.');
-        } 
-        catch (error) {
-          this.handleError(error);
-        }
-      }
-
-      /**
-       * Call the store to update a user.
-       */
-      async callUpdate() {
-        try {
-          await this.editProduct(this.formProduct);
-          this.dialog = false;
-          this.showSnackbar('Product was successfully updated.');
-        } 
-        catch (error) {
-          this.handleError(error);
-        }
-      }
-
-      /**
-       * Handles the errors. This will basically just set the errors variables
-       * with the given error response data.
-       */
-      handleError(error: any): void {
-        const fields = Object.keys(error.response.data.errors);
-        fields.forEach((field: string) => {
-          error.response.data.errors[field].forEach((errorMessage: string) => {
-            this.errors.push(errorMessage);
-          });
-        });
-      }
-
-      /**
-       * Displays the snackbar with the given message.
-       */
-      showSnackbar(message: string): void {
-          this.snackbarText = message;
-          this.snackbar = true;
+    /**
+     * The form dialog title. This will depend on the isNew value returned by
+     * the form product.
+     */
+    get formTitle(): string {
+      return this.formProduct.isNew() ? 'Add a new product' : 'Edit your product';
+    };
+    
+          /**
+     * Returns the form element.
+     */
+    form(): any {
+      return this.$refs.form;
+    }
+    
+    /**
+     * Reset the form if set.
+     */
+    resetForm(): void {
+      this.errors = [];
+      if (this.form()) {
+        this.form().resetValidation();
       }
     }
+
+    /**
+     * Validate the form if set.
+     */
+    validateForm(): boolean {
+      this.errors = [];
+      if (this.form()) {
+        return this.form().validate();
+      }
+
+      return false;
+    }
+
+    /**
+     * Fetch all products when this component is created.
+     */
+    created(): void {
+      this.fetchProducts();
+    }
+
+    /**
+     * Open up the modal to edit a product, and set the form item to have the
+     * properties the new item has.
+     */
+    onEdit(product: Product): void {
+      this.formProduct = Product.createSingleFromResponse(product);
+      this.dialog = true;
+    }
+
+    /**
+     * Callback for confirmation form. This will call the store to delete the
+     * given item.
+     */
+    onDelete(product: Product): void {
+      // No feedback expected from the api. If there are errors, they'll be
+      // handled in the store.
+      this.deleteProduct(product);
+      
+      this.confirmationDialog = false;
+      this.showSnackbar('User was deleted successfully.');
+    }
+
+    /**
+     * Open up the modal to create a new product, and set the form product as
+     * a new one.
+     */
+    onCreate() {
+      this.formProduct = new Product();
+      this.dialog = true; 
+    }
+
+    
+    /**
+     * Callback for dialog form. This will either update the product or create
+     * a new one depending on the current action.
+     */
+    onSave(): void {
+      if (!this.validateForm()) {
+        return;
+      }
+
+      this.formProduct.isNew() ? this.callSave() : this.callUpdate();
+    }
+
+    /**
+     * Call the store the add a new user.
+     */
+    async callSave(): Promise<void>{
+      try {
+        await this.addProduct(this.formProduct);
+        this.dialog = false;
+        this.showSnackbar('Product was successfully created.');
+      } 
+      catch (error) {
+        this.handleError(error);
+      }
+    }
+
+    /**
+     * Call the store to update a user.
+     */
+    async callUpdate() {
+      try {
+        await this.editProduct(this.formProduct);
+        this.dialog = false;
+        this.showSnackbar('Product was successfully updated.');
+      } 
+      catch (error) {
+        this.handleError(error);
+      }
+    }
+
+    /**
+     * Handles the errors. This will basically just set the errors variables
+     * with the given error response data.
+     */
+    handleError(error: any): void {
+      const fields = Object.keys(error.response.data.errors);
+      fields.forEach((field: string) => {
+        error.response.data.errors[field].forEach((errorMessage: string) => {
+          this.errors.push(errorMessage);
+        });
+      });
+    }
+
+    /**
+     * Displays the snackbar with the given message.
+     */
+    showSnackbar(message: string): void {
+        this.snackbarText = message;
+        this.snackbar = true;
+    }
+  }
 </script>

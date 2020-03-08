@@ -1,9 +1,9 @@
 export class User {
     
     /**
-     * Unique identifier of the user. This is null when the user is 'new'
+     * Unique identifier of the user. This is 0 when the user is 'new'
      */
-    id?: number;
+    id: number = 0;
 
     /**
      * The name of the user.
@@ -24,7 +24,7 @@ export class User {
      *  'new'.
      */
     constructor(name?: string, email?: string, id?: number) {
-        this.id = id;
+        this.id = id || 0;
         this.name = name || '';
         this.email = email || '';;
     }
@@ -33,7 +33,7 @@ export class User {
      * Detemine if the user is new depending on the id of the user.
      */
     isNew(): boolean {
-        return !this.id;
+        return this.id === 0;
     }
 
     /**

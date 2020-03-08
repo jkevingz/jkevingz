@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProduct;
 use App\Product;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -12,9 +13,15 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Product::all();
+        $ids = $request->query('ids');
+        if (empty($ids)) {
+            return Product::all();
+        }
+        else {
+            return Product::whereIn('id', $ids)->get();
+        }
     }
 
     /**

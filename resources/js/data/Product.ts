@@ -1,9 +1,9 @@
 export class Product {
     
     /**
-     * Unique identifier of the product. This is null when the product is 'new'
+     * Unique identifier of the product. This is 0 when the product is 'new'
      */
-    id?: number;
+    id: number = 0;
 
     /**
      * The name of the product.
@@ -27,6 +27,16 @@ export class Product {
     description?: string;
 
     /**
+     * A boolean to indicate if the product is in the cart already.
+     */
+    inCart?: boolean;
+
+    /**
+     * The number of units added to the cart of this product.
+     */
+    cartUnits: number = 0;
+
+    /**
      * Product's constructor.
      * 
      * @param name The name of the product.
@@ -38,18 +48,19 @@ export class Product {
      *  is 'new'.
      */
     constructor(name?: string, slug?: string, price?: number, description?: string, id?: number) {
-        this.id = id;
+        this.id = id || 0;
         this.name = name || '';
         this.slug = slug || '';
         this.price = price || 0;
         this.description = description || '';
+        this.initInCart();
     }
 
     /**
      * Detemine if the product is new depending on the id of the product.
      */
     isNew(): boolean {
-        return !this.id;
+        return this.id === 0;
     }
 
     /**
@@ -68,6 +79,28 @@ export class Product {
      */
     isNotEqualToProduct(product: Product): boolean {
         return !this.isEqualToProduct(product);
+    }
+
+    /**
+     * Determine if the product was already added to the cart by the user. This
+     * will only work on runtime so the value is not consistent.
+     */
+    initInCart(): void {
+        const productsInCartString = localStorage.getItem('products_cart');
+        if (!productsInCartString) {
+            this.inCart = false;
+        }
+        else {
+            const idsJson = JSON.parse(productsInCartString);
+            const units = idsJson[this.id];
+            if (units) {
+                this.inCart = true;
+                this.cartUnits = units;
+            }
+            else {
+                this.inCart = false;
+            }
+        }
     }
 
     /**
